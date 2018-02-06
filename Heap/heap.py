@@ -96,6 +96,9 @@ def heapInsert(A, v):
 
 def heapSort(A):
     """use a heap to build REVERSE sorted array from the end"""
+    while(A):
+        printHeap(A)
+        (heapExtractMin(A))
 
 
 def printHeap(A):
