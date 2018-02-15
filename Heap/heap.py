@@ -38,12 +38,14 @@ def heapify(A, i, n=None):
     n needed for heap sort,
     where the heap is left part of the array 
     and sorted is right part"""
-    if right(i) < len(A):
+    if n is None:
+        n = len(A)
+    if right(i) < n:
         heapify(A, right(i), None)
-    if left(i) < len(A):
+    if left(i) < n:
         heapify(A, left(i), None)
 
-    if left(i) < len(A) and right(i) < len(A):
+    if left(i) < n and right(i) < n:
         smallest_child = "right"
         if A[right(i)] > A[left(i)]:
             smallest_child = "left"
@@ -51,15 +53,17 @@ def heapify(A, i, n=None):
         if smallest_child is "right":
             if A[right(i)] < A[i]:
                 A[i], A[right(i)] = A[right(i)], A[i]  # Swap
-                heapify(A, right(i), None)
+                heapify(A, right(i), n)
+
 
         if smallest_child is "left":
             if A[left(i)] < A[i]:
                 A[i], A[left(i)] = A[left(i)], A[i]  # Swap
-                heapify(A, left(i), None)
+                heapify(A, left(i), n)
     elif left(i) < len(A) and A[left(i)] < A[i]:
         A[i], A[left(i)] = A[left(i)], A[i]  # Swap
-        heapify(A, left(i), None)
+        heapify(A, left(i), n)
+
     else:
         return
 
@@ -96,10 +100,11 @@ def heapInsert(A, v):
 
 def heapSort(A):
     """use a heap to build REVERSE sorted array from the end"""
+    newArr = []
     while(A):
-        printHeap(A)
-        (heapExtractMin(A))
-
+        newArr.append(heapExtractMin(A))
+    newArr.reverse()
+    A += newArr
 
 def printHeap(A):
     height = int(math.log(len(A), 2))
@@ -156,7 +161,6 @@ def main():
     if db: print("heap:", A)
     heapSort(A)
     print("reverse sorted A:", A)
-
 
 if __name__ == "__main__":
     main()
