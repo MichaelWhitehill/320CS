@@ -2,7 +2,6 @@ import sys
 import math
 
 db = False
-OUTPUT_NAME = "output.txt"
 
 
 # provided
@@ -55,7 +54,6 @@ def heapify(A, i, n=None):
             if A[right(i)] < A[i]:
                 A[i], A[right(i)] = A[right(i)], A[i]  # Swap
                 heapify(A, right(i), n)
-
         if smallest_child is "left":
             if A[left(i)] < A[i]:
                 A[i], A[left(i)] = A[left(i)], A[i]  # Swap
@@ -125,9 +123,6 @@ def printHeap(A):
 
 # provided
 def main():
-    global OUTPUT_NAME
-    outfile = open(OUTPUT_NAME, 'w')
-    sys.stdout = outfile
     testA = []
     heapInsert(testA, 5)
     heapInsert(testA, 7)
