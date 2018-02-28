@@ -54,8 +54,6 @@ def heapify(A, i, n=None):
             if A[right(i)] < A[i]:
                 A[i], A[right(i)] = A[right(i)], A[i]  # Swap
                 heapify(A, right(i), n)
-
-
         if smallest_child is "left":
             if A[left(i)] < A[i]:
                 A[i], A[left(i)] = A[left(i)], A[i]  # Swap
@@ -63,7 +61,6 @@ def heapify(A, i, n=None):
     elif left(i) < len(A) and A[left(i)] < A[i]:
         A[i], A[left(i)] = A[left(i)], A[i]  # Swap
         heapify(A, left(i), n)
-
     else:
         return
 
