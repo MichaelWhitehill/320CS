@@ -35,6 +35,7 @@ def bfs(graph, list):
     depth = 1
     while que:
         visited = False
+
         current = que.pop(0)
         # append the current node to the list
         children = graph[current][1]
@@ -70,6 +71,7 @@ def dfs(r):
             print("cycle in " + item)
         if gr[item][0] == "white":
             dfs(item)
+
     gr[r] = ("black", gr[r][1])
 
 
