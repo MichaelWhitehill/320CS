@@ -32,18 +32,22 @@ def bfs(graph, list):
     # get first list of children
     que = []
     que.append(list[0][0])
-    depth = 0
+    depth = 1
     while que:
+        visited = False
+
         current = que.pop(0)
         # append the current node to the list
         children = graph[current][1]
         for c in children:
             if graph[c][0] == "white":
-                depth += 1
                 c1 = graph[c][1]
+                visited = True
                 graph[c] = ("black", c1)
                 list.append((c, depth))
                 que.append(c)
+        if visited:
+            depth += 1
 
     return list
 
@@ -62,14 +66,12 @@ def dfs(r):
     """
     # color our self grey
     gr[r] = ("grey", gr[r][1])
-    stack = gr[r][1]
-    while stack:
-        for item in stack:
-            if gr[item][0] == "grey":
-                print("cycle in " + item)
-            if gr[item][0] == "white":
-                dfs(item)
-        stack.pop(0)
+    for item in gr[r][1]:
+        if gr[item][0] == "grey":
+            print("cycle in " + item)
+        if gr[item][0] == "white":
+            dfs(item)
+
     gr[r] = ("black", gr[r][1])
 
 
