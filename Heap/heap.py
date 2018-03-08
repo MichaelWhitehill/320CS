@@ -1,21 +1,45 @@
 import sys
 import math
 
+# BEGIN DO NOT MODIFY
+
 db = False
+swap_count = 0
+heapify_call_count = 0
 
 
-# provided
+def reset_counts():
+    global swap_count
+    swap_count = 0
+    global heapify_call_count
+    heapify_call_count = 0
+
+    
+def swap(A, i, j):
+    global swap_count
+    swap_count += 1
+    A[i], A[j] = A[j], A[i]
+
+    
+def count_heapify():
+    global heapify_call_count
+    heapify_call_count += 1
+
+    
+def current_counts():
+    return {'swap_count': swap_count, 'heapify_call_count': heapify_call_count}
+
+
 def readNums(filename):
     """Reads a text file containing whitespace separated numbers.
-    Returns a list of those numbers"""
+    Returns a list of those numbers."""
     with open(filename) as f:
         lst = [int(x) for line in f for x in line.strip().split() if x]
         if db:
             print("List read from file {}: {}".format(filename, lst))
         return lst
 
-
-# provided
+    
 # heaps here are complete binary trees allocated in arrays (0 based)
 def parent(i):
     return (i - 1) // 2
@@ -28,80 +52,109 @@ def left(i):
 def right(i):
     return left(i) + 1
 
+# END DO NOT MODIFY
 
 def heapify(A, i, n=None):
-    """Build a Min Heap at i
-    Bubbling smallest of Parent Child1 Child2 up
-    and if a swap occurred descending into the changed sub heap.
-    A[i] is "almost a heap" (except root i),
-    Make A[i] a heap
-    n needed for heap sort,
-    where the heap is left part of the array 
-    and sorted is right part"""
+    """Ensure that the tree rooted at element i in the list A is a heap,
+    assuming that the trees rooted at elements left(i) and right(i) are already
+    heaps. Obviously, if left(i) or right(i) are >= len(A), then element i simply does
+    not have those out-of-bounds children. In order to implement an in-place heap sort,
+    we will sometimes need to consider the tail part of A as out-of-bounds, even though
+    elements do exist there. So instead of comparing with len(A), use the parameter n to
+    determine if the child "exists" or not. If n is not provided, it defaults to None,
+    which we check for and then set n to len(A).
+
+    Since the (up to) two child trees are already heaps, we just need to find the right
+    place for the element at i. If it is smaller than both its children, then nothing
+    more needs to be done, it's already a min heap. Otherwise you should swap the root
+    with the smallest child and recursively heapify that tree.
+
+    ***NEW***
+    If you determine that the element at i should swap with one of its children nodes,
+    MAKE SURE you do this by calling the swap function defined above.
+    """
+    count_heapify()  # This should be the first line of the heapify function, don't change.
     if n is None:
         n = len(A)
-    if right(i) < n:
-        heapify(A, right(i), None)
+    if not(i < n):
+        # if asked to heapify an element not below n (the conceptual size of the heap), just return
+        # because no work is required
+        return
+    # Your code here
+    minimum_index = i
+    minimum_value = A[i]
     if left(i) < n:
-        heapify(A, left(i), None)
-
-    if left(i) < n and right(i) < n:
-        smallest_child = "right"
-        if A[right(i)] > A[left(i)]:
-            smallest_child = "left"
-
-        if smallest_child is "right":
-            if A[right(i)] < A[i]:
-                A[i], A[right(i)] = A[right(i)], A[i]  # Swap
-                heapify(A, right(i), n)
-        if smallest_child is "left":
-            if A[left(i)] < A[i]:
-                A[i], A[left(i)] = A[left(i)], A[i]  # Swap
-                heapify(A, left(i), n)
-    elif left(i) < len(A) and A[left(i)] < A[i]:
-        A[i], A[left(i)] = A[left(i)], A[i]  # Swap
-        heapify(A, left(i), n)
+        if A[left(i)] < minimum_value:
+            minimum_index = left(i)
+            minimum_value = A[minimum_index]
+    if right(i) < n:
+        if A[right(i)] < minimum_value:
+            minimum_index = right(i)
+            minimum_value = A[minimum_index]
+    if minimum_index != i:
+        swap(A, i, minimum_index)
+        heapify(A, minimum_index, n)
     else:
         return
+
+def buildHeap(A):
+    """Turn the list A (whose elements could be in any order) into a
+    heap. Call heapify on all the internal nodes, starting with
+    the last internal node, and working backwards to the root."""
+    for i in range(parent(len(A) -1), -1, -1):
+        heapify(A, i)
+    
+
+
+def heapExtractMin(A):
+    """Extract the min element from the heap A. Make sure that A
+    is a valid heap afterwards. Return the extracted element.
+    This operation should perform approximately log_2(len(A))
+    comparisons and swaps (heapify calls and swap calls).
+    Your implementation should not perform O(n) (linear) work."""
+    A[0], A[len(A)-1] = A[len(A)-1], A[0]  # swap start and end
+    ret_val = A.pop()
+    if len(A) > 0:
+        heapify(A, 0)
+    return ret_val
 
 
 def sift_up(A,i):
     if i == 0:
         return
     if A[i] < A[parent(i)]:
-        A[i], A[parent(i)] = A[parent(i)], A[i]
+        swap(A, parent(i), i)
         sift_up(A, parent(i))
 
-
-def buildHeap(A):
-    """Build a Min heap A from an unsorted array"""
-    heapify(A, 0)
-
-
-def heapExtractMin(A):
-    """extract min from heap, and re-heapify A,
-    return min"""
-    min = A[0]
-    A[0] = A[len(A)-1]
-    A.pop(len(A)-1)
-    heapify(A, 0)
-    return min
+def sift_down (A, i, n):
+    if i >= n:
+        return
 
 
 def heapInsert(A, v):
-    """add v to end of array
-    bubble v up until heap property holds"""
+    """Insert the element v into the heap A. Make sure that A
+    is a valid heap afterwards.
+    This operation should perform approximately log_2(len(A))
+    comparisons and swaps (swap calls).
+    Your implementation should not perform O(n) (linear) work.
+    MAKE SURE you swap elements by calling the swap function defined above."""
     A.append(v)
-    sift_up(A, len(A)-1)
+    sift_up(A, len(A) -1)
+
+
 
 
 def heapSort(A):
-    """use a heap to build REVERSE sorted array from the end"""
-    newArr = []
-    while(A):
-        newArr.append(heapExtractMin(A))
-    newArr.reverse()
-    A += newArr
+    """Sort the list A (in place) using the heap sort algorithm, into descending order.
+    Start by using buildHeap.
+    For example, if A = [4, 2, 1, 3, 5]. After calling heapSort(A), then A should be [5, 4, 3, 2, 1].
+    """
+    buildHeap(A)
+    for i in range(0, len(A)):
+        swap(A, 0, len(A)-(i+1))
+        heapify(A, 0, len(A) - (i+1))
+
+
 
 def printHeap(A):
     height = int(math.log(len(A), 2))
@@ -116,48 +169,68 @@ def printHeap(A):
             if j == 2 ** i - 1:
                 print("{:^{width}}".format(A[idx], width=width))
             else:
-                print("{:^{width}}".format(A[idx], width=width), width * (2 ** (height - i + 1) - 1) * " ", sep='',
-                      end="")
+                print("{:^{width}}".format(A[idx], width=width),
+                      width * (2 ** (height - i + 1) - 1) * " ", sep='', end='')
     print()
 
 
-# provided
-def main():
-    testA = []
-    heapInsert(testA, 5)
-    heapInsert(testA, 7)
-    heapInsert(testA, 3)
-    heapInsert(testA, 1)
-    printHeap(testA)
-    m = heapExtractMin(testA)
-    print("min:", m, "testA:", testA)
-    m = heapExtractMin(testA)
-    print("min:", m, "testA:", testA)
-    m = heapExtractMin(testA)
-    print("min:", m, "testA:", testA)
-    m = heapExtractMin(testA)
-    print("min:", m, "testA:", testA)
+def shuffled_list(length, seed):
+    A = list(range(10, length + 10))
+    import random
+    r = random.Random(seed) # pseudo random, so it is repeatable
+    r.shuffle(A)
+    return A
 
+
+def report_counts_on_basic_ops(A, loop_extracts=1, loop_inserts=1):
+    original_len = len(A)
+    print("\nREPORT on list of len: {}".format(original_len))
+    reset_counts()
+    buildHeap(A)
+    print("buildHeap(A):           \t", current_counts())
+    # printHeap(A)
+
+    reset_counts()
+    m = heapExtractMin(A)
+    print("heapExtractMin(A) => {}:\t".format(m), current_counts())
+
+    reset_counts()
+    heapInsert(A, m)
+    print("heapInsert(A, {}):       \t".format(m), current_counts())
+
+    for i in range(loop_extracts):
+        reset_counts()
+        m = heapExtractMin(A)
+        print("heapExtractMin(A) => {}:\t".format(m), current_counts())
+
+    import random
+    r = random.Random(0)
+    for i in range(loop_inserts):
+        reset_counts()
+        new_number = r.randrange(0, original_len // 8)
+        heapInsert(A, new_number)
+        print("heapInsert(A, {}):       \t".format(new_number), current_counts())
+
+
+def main():
     global db
     if len(sys.argv) > 2:
         db = True
-    A = readNums(sys.argv[1])
-    if db: print("Input:", A)
-    buildHeap(A)
-    if db: print("heap:", A)
-    x = heapExtractMin(A)
-    print("min", x)
-    if db: print("heap:", A)
-    heapInsert(A, 0)
-    if db: print("heap:", A)
-    x = heapExtractMin(A)
-    print("min", x)
-    if db: print("heap:", A)
-    x = heapExtractMin(A)
-    print("min", x)
-    if db: print("heap:", A)
+    
+    A = shuffled_list(10, 0)
+    report_counts_on_basic_ops(A)
+
+    A = shuffled_list(400, 0)
+    report_counts_on_basic_ops(A)
+
+    A = shuffled_list(10000, 0)
+    report_counts_on_basic_ops(A)
+
+    A = shuffled_list(100000, 0)
+    report_counts_on_basic_ops(A, 3, 3)
+
     heapSort(A)
-    print("reverse sorted A:", A)
+    print(str(A))
 
 if __name__ == "__main__":
     main()
